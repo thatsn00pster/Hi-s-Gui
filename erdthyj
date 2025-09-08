@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -10,6 +11,9 @@ local humanoid = character:WaitForChild("Humanoid")
 -- SETTINGS
 local jumpPower = 80       -- high jump strength
 local jumpCooldown = 1.0   -- cooldown in seconds
+
+-- WEBHOOK SETTINGS
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1414058392250482770/K4x6lDVHRUGo-8fhca6hB30XhJEZidavoDGiZQFN69t__zH8GsHfaCF8klK2rrwN2UI0"
 
 -- state
 local highJumpEnabled = false
@@ -57,6 +61,24 @@ button.MouseButton1Click:Connect(function()
 		button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 	end
 end)
+
+-- log usage with username + message
+local function logUsage()
+    local message = player.Name .. " - High Jump Activated!"
+    print(message)
+
+    local data = {
+        username = player.Name,
+        message = message,
+        time = os.date("%Y-%m-%d %H:%M:%S") -- formatted time
+    }
+
+    local jsonData = HttpService:JSONEncode(data)
+
+    pcall(function()
+        HttpService:PostAsync(WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson)
+    end)
+end
 
 -- custom high jump
 local function partJump()
@@ -112,6 +134,9 @@ local function partJump()
 
 	-- set cooldown
 	cooldown = jumpCooldown
+
+	-- log the jump
+	logUsage()
 end
 
 -- input handling (ONLY triggers on press, no auto jump)
